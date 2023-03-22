@@ -18,4 +18,21 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
     assert(result.columns.length == expectedCols.length)
   }
 
+  test("test_minmaxmean_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getMinMaxMeanStats()
+    result.show()
+
+    assert(result.columns.length == 19)
+  }
+
+  test("test_percentiles_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getPercentileStats()
+    result.show()
+
+    assert(result.columns.length == 10)
+  }
+
+
 }

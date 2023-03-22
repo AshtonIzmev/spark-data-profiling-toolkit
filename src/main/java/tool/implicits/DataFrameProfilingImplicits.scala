@@ -1,8 +1,9 @@
 package tool.implicits
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.IntegerType
+import tool.Toolkit
 
 
 /**
@@ -28,6 +29,39 @@ object DataFrameProfilingImplicits {
         .avg(cols.map(c => "missing_"+c):_*)
         .na.fill(0)
     }
+
+    /**
+     * MinMaxMean statistics
+     *
+     * @return statistics on min, max and mean values
+     */
+    def getMinMaxMeanStats(): DataFrame = {
+      val numericCols = df.schema.filter(p => Toolkit.NUMERIC_TYPES.contains(p.dataType)).map(_.name)
+      val x = numericCols.map(c => Seq(min(c), max(c), avg(c), stddev(c), skewness(c), kurtosis(c)))
+        .reduce((a, b) => a ++ b)
+      println(x)
+      df.select(numericCols.map(col):_*)
+        .groupBy()
+        .agg(count("*"), x:_*)
+    }
+
+    /**
+     * Percentile statistics
+     *
+     * @return median, quarter and 75% percentile
+     */
+    def getPercentileStats(): DataFrame = {
+      val numericCols = df.schema.filter(p => Toolkit.NUMERIC_TYPES.contains(p.dataType)).map(_.name)
+      df.select(numericCols.map(col): _*)
+        .groupBy()
+        .agg(count("*"),
+          numericCols.map(c => percentile_approx(col(c), lit(0.25), lit(100))) ++
+            numericCols.map(c => percentile_approx(col(c), lit(0.5), lit(100))) ++
+            numericCols.map(c => percentile_approx(col(c), lit(0.75), lit(100))): _*)
+    }
+
+
+
 
   }
 
