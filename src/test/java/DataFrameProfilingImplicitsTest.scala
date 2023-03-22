@@ -20,7 +20,7 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
 
   test("test_minmaxmean_classic") {
     val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
-    val result = df.getMinMaxMeanStats()
+    val result = df.getMinMaxMeanStats
     result.show()
 
     assert(result.columns.length == 19)
@@ -28,11 +28,36 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
 
   test("test_percentiles_classic") {
     val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
-    val result = df.getPercentileStats()
+    val result = df.getPercentileStats
     result.show()
 
     assert(result.columns.length == 10)
   }
+
+  test("test_frequency_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getFrequencyStats(5)
+
+    assert(result.columns.length == 16)
+  }
+
+  test("test_duplicate_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getDuplicateStats
+
+    assert(result.columns.length == 9)
+  }
+
+  test("test_date_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getDateTimeStats
+    result.show()
+
+    assert(result.columns.length == 5)
+  }
+
+
+
 
 
 }
