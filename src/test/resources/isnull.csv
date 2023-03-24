@@ -1,7 +1,7 @@
 CAT1,CAT2,COM1,ID1,NUM1,NUM2,DAT1,DAT2
 Silver,Dirigeant,Le client ne désire pas être sollicité par téléphone,1,46,35,1970-01-01
-Platinium,Sans emploi,\t,2,99,-2147483648,9999-01-01
+Platinium,Sans emploi,\t\t\t,2,99,-2147483648,9999-01-01
 Gold,—,NULL,1,59,0,,2022-11-19
-Silver,Employe,,123,12,998,1954-03-03,1986-01-05
+Silver,Employe,A CONTACTER,123,12,998,1954-03-03,1986-01-05
 Gold,Salarie,,124,32,125,,1986-03-01
-Gold,Employe,,125,45,123,2002-02-02,1986-02-01
+Gold,Employe,Vide,125,45,123,2002-02-02,1986-02-01

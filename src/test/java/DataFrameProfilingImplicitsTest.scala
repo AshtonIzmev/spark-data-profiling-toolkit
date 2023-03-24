@@ -56,6 +56,30 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
     assert(result.columns.length == 5)
   }
 
+  test("test_month_dow_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getMonthDowStats(3)
+    result.show()
+
+    assert(result.columns.length == 8)
+  }
+
+  test("test_text_length_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getTextLengthStats(Seq("COM1"))
+    result.show()
+
+    assert(result.columns.length == 1)
+  }
+
+  test("test_word_freq_classic") {
+    val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
+    val result = df.getTextWordStats(Seq("COM1"), 5)
+    result.show()
+
+    assert(result.columns.length == 2)
+  }
+
 
 
 

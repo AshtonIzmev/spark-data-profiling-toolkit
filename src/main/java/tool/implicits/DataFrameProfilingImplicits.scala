@@ -1,15 +1,13 @@
 package tool.implicits
 
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{IntegerType, TimestampType}
+import org.apache.spark.sql.types.IntegerType
 import tool.Toolkit
+import tool.implicits.DataFrameImplicits.DataFrameImprovements
 
 
-/**
- * Those are the functions used for feature engineering
- */
 object DataFrameProfilingImplicits {
 
   implicit class DataFrameProfilingImprovements(df: DataFrame) {
@@ -66,10 +64,7 @@ object DataFrameProfilingImplicits {
      * @return frequent values
      */
     def getFrequencyStats(nTop:Int): DataFrame = {
-      val cols = df.columns
-      cols.map(
-        c => df.select(c).groupBy(c).count().orderBy(desc("count")).limit(nTop).withColumn("id", monotonically_increasing_id())
-      ).reduce((a,b) => a.join(b, "id"))
+      df.addFreqCols(df.columns, nTop)
     }
 
     /**
@@ -100,10 +95,48 @@ object DataFrameProfilingImplicits {
         .select(dateCols.map(c=>c+"_datediff").map(col):_*)
         .groupBy()
         .agg(count("*"), s_dateCols.map(c => min(c)) ++ s_dateCols.map(c => max(c)):_*)
+    }
+
+    /**
+     * Month/Day analysis
+     *
+     * @return month/day statistics
+     */
+    def getMonthDowStats(nTop:Int): DataFrame = {
+      val dateCols = df.schema.filter(p => Toolkit.DATETIME_TYPES.contains(p.dataType)).map(_.name)
+      dateCols.foldLeft(df.select(dateCols.map(col): _*)) { case (df_arg, c) =>
+        df_arg.withColumn(c + "_month", month(col(c)))
+          .withColumn(c + "_dow", dayofweek(col(c)))
+      }
+        .addFreqCols(dateCols.map(c => c + "_month")++dateCols.map(c => c + "_dow"), nTop)
 
     }
 
+    /**
+     * Text analysis
+     *
+     * @return Text Length statistics
+     */
+    def getTextLengthStats(cols: Seq[String]): DataFrame = {
+      cols.foldLeft(df.select(cols.map(col):_*)) { case (df_arg, c) =>
+        df_arg.withColumn(c+"_len", length(col(c)))
+      }
+        .groupBy()
+        .agg(count("*"), cols.map(c => avg(c+"_len")):_*)
+        .drop("count(1)")
+    }
 
+    /**
+     * Text analysis
+     *
+     * @return Text Word statistics
+     */
+    def getTextWordStats(cols: Seq[String], nTop:Int): DataFrame = {
+     cols.foldLeft(df.select(cols.map(col):_*)) { case (df_arg, c) =>
+        df_arg.withColumn(c + "_spl", explode(split(col(c), " ")))
+      }
+       .addFreqCols(cols.map(c => c + "_spl"), nTop)
+    }
 
 
   }
