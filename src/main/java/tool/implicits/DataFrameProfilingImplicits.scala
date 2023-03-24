@@ -41,6 +41,7 @@ object DataFrameProfilingImplicits {
       df.select(numericCols.map(col):_*)
         .groupBy()
         .agg(count("*"), x:_*)
+        .drop("count(1)")
     }
 
     /**
@@ -56,6 +57,7 @@ object DataFrameProfilingImplicits {
           numericCols.map(c => percentile_approx(col(c), lit(0.25), lit(100))) ++
             numericCols.map(c => percentile_approx(col(c), lit(0.5), lit(100))) ++
             numericCols.map(c => percentile_approx(col(c), lit(0.75), lit(100))): _*)
+        .drop("count(1)")
     }
 
     /**
@@ -77,6 +79,7 @@ object DataFrameProfilingImplicits {
       val nb = df.count()
       df.groupBy()
         .agg(count("*"), cols.map(c => round(countDistinct(c).divide(lit(nb)), 2).alias("duplicate_pct_"+c)):_*)
+        .drop("count(1)")
     }
 
     /**
@@ -89,12 +92,13 @@ object DataFrameProfilingImplicits {
       val dateCols = df.schema.filter(p => Toolkit.DATETIME_TYPES.contains(p.dataType)).map(_.name)
       val s_dateCols = dateCols.map(c=>c+"_datediff")
       dateCols.foldLeft(df.select(dateCols.map(col):_*)) { case (df_arg, c) =>
-        df_arg.withColumn(c+"_shift1",  lag(col(c), 1).over(W.orderBy(asc(c))))
+        df_arg.withColumn(c+"_shift1",  lead(col(c), 1).over(W.orderBy(asc(c))))
               .withColumn(c+"_datediff", datediff(col(c+"_shift1"), col(c)))
       }
         .select(dateCols.map(c=>c+"_datediff").map(col):_*)
         .groupBy()
         .agg(count("*"), s_dateCols.map(c => min(c)) ++ s_dateCols.map(c => max(c)):_*)
+        .drop("count(1)")
     }
 
     /**
@@ -109,7 +113,6 @@ object DataFrameProfilingImplicits {
           .withColumn(c + "_dow", dayofweek(col(c)))
       }
         .addFreqCols(dateCols.map(c => c + "_month")++dateCols.map(c => c + "_dow"), nTop)
-
     }
 
     /**

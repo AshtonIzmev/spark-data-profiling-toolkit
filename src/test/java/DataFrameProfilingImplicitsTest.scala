@@ -23,7 +23,7 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
     val result = df.getMinMaxMeanStats
     result.show()
 
-    assert(result.columns.length == 19)
+    assert(result.columns.length == 18)
   }
 
   test("test_percentiles_classic") {
@@ -31,12 +31,13 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
     val result = df.getPercentileStats
     result.show()
 
-    assert(result.columns.length == 10)
+    assert(result.columns.length == 9)
   }
 
   test("test_frequency_classic") {
     val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
     val result = df.getFrequencyStats(5)
+    result.show()
 
     assert(result.columns.length == 16)
   }
@@ -44,6 +45,7 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
   test("test_duplicate_classic") {
     val df = DataLoading.loadCsv("src/test/resources/isnull.csv", inferSchema = "true")
     val result = df.getDuplicateStats
+    result.show()
 
     assert(result.columns.length == 9)
   }
@@ -53,7 +55,7 @@ class DataFrameProfilingImplicitsTest extends AnyFunSuite {
     val result = df.getDateTimeStats
     result.show()
 
-    assert(result.columns.length == 5)
+    assert(result.columns.length == 4)
   }
 
   test("test_month_dow_classic") {
